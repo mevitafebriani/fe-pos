@@ -4,6 +4,8 @@ import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
 import { definePreset } from '@primeuix/themes'
 
+import { ConfirmationService } from 'primevue'
+
 import './assets/main.css'
 
 import App from './App.vue'
@@ -58,5 +60,7 @@ app.use(PrimeVue, {
         }
     }
 })
+
+app.use(ConfirmationService)
 
 app.mount('#app')

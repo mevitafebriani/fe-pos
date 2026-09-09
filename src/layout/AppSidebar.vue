@@ -25,6 +25,12 @@ const menuItems = ref([
         items: [
             { icon: "pi pi-th-large", to: "/", label: "Dashboard"}
         ]
+    },
+    {
+        label: "Management",
+        items: [
+            { icon: "pi pi-tag", to: "/product-categories", label: "Product Categories" }
+        ]
     }
 ])
 </script>
@@ -75,7 +81,7 @@ const menuItems = ref([
                         {{ user?.email }}
                     </div>
                 </div>
-                <div class="ml-auto w-8 h-8 rounded-lg flex items-center justify-center text-surface-400 group-hover:bg-red-100 group-hover:text-red-100 transaction-colors">
+                <div class="ml-auto w-8 h-8 rounded-lg flex items-center justify-center text-surface-400 group-hover:bg-red-100 group-hover:text-red-100 transition-colors">
                     <i class="pi pi-sign-out text-lg"></i>
                 </div>
             </button>
