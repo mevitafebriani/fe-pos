@@ -57,7 +57,7 @@ onMounted(() => {
                     The list here show all product categories.
                 </p>
             </div>
-            <Button asChild v-slot="slotProps">
+           <Button asChild v-slot="slotProps">
                 <RouterLink
                     to="/product-categories/create"
                     :class="slotProps.class"
@@ -66,8 +66,8 @@ onMounted(() => {
                 </RouterLink>
             </Button>
         </div>
-        <div class="bg-white rounded-2xl border border-surface-200 p-2">
 
+        <div class="bg-white rounded-2xl border border-surface-200 p-2">
             <div class="flex flex-col md:flex-row justify-between items-center px-4 py-4 gap-4">
                 <IconField iconPosition="left" class="w-full md:w-80">
                     <InputIcon class="pi pi-search text-surface-400" />
@@ -94,6 +94,9 @@ onMounted(() => {
                 <Column header="Actions" style="width: 5rem;">
                     <template #body="{ data }">
                         <div class="flex items-center gap-2">
+                            <RouterLink :to="{ name: 'product-categories-edit', params: { id: data.id } }">
+                                <Button icon="pi pi-pencil" text rounded severity="primary" class="w-9! h-9! border-surface-200! text-surface-200! hover:text-primary-600! hover:border-primary-500 hover:bg-primary-50! bg-white" @click="confirmDelete(data.id)" />
+                            </RouterLink>
                             <Button icon="pi pi-trash" text rounded severity="danger" class="w-9! h-9! border-surface-200! text-surface-200! hover:text-primary-600! hover:border-primary-500 hover:bg-primary-50! bg-white" @click="confirmDelete(data.id)" />
                         </div>
                     </template>
