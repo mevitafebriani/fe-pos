@@ -1,43 +1,35 @@
 <script setup lang="ts">
-import { Button, DataTable, Column, Select, IconField, InputIcon, InputText, useConfirm, ConfirmDialog } from 'primevue';
-import { useCustomerStore } from '@/stores/customer.store';
+import { Button, DataTable, Column, Select, IconField, InputIcon, InputText } from 'primevue';
+import { useTransactionStore } from '@/stores/transaction.store';
 import { useDebounceFn } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 
-const customerStore = useCustomerStore()
-const { fetch, setLimit, setPage, nextPage, prevPage, deleteCustomer } = customerStore
-const { items, loading, limit, currentPage, totalPages, search } = storeToRefs(customerStore)
-
-const confirm = useConfirm()
+const transactionStore = useTransactionStore()
+const { fetch, setLimit, setPage, nextPage, prevPage } = transactionStore
+const { items, loading, limit, currentPage, totalPages, search } = storeToRefs(transactionStore)
 
 const onSearch = useDebounceFn(() => {
     setPage(1)
 }, 400)
 
-const confirmDelete = (id: number) => {
-    confirm.require({
-        message: "Are you sure you want to delete this customer?",
-        header: "Confirm delete",
-        icon: "pi pi-exclamation-triangle",
-        rejectProps: {
-            label: "Cancel",
-            severity: "secondary",
-            outline: true
-        },
-        acceptProps: {
-            label: "Delete",
-            severity: "danger"
-        },
-        accept: async () => {
-            try {
-                await deleteCustomer(id)
-                fetch()
-            } catch (error) {
-                console.log(error)
-            }
-        }
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(value)
+}
+
+const formatDate = (value: string) => {
+    if (!value) return '-'
+    return new Date(value).toLocaleString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
     })
 }
 
@@ -51,55 +43,70 @@ onMounted(() => {
         <div class="flex justify-between items-start mb-8">
             <div>
                 <h1 class="text-2xl font-bold text-surface-900 mb-1">
-                    Customers
+                    Transactions
                 </h1>
                 <p class="text-surface-500 text-sm">
-                    The list here shows all customers.
+                    The list here shows all transactions.
                 </p>
             </div>
-           <Button asChild v-slot="slotProps">
-                <RouterLink
-                    to="/customers/create"
-                    :class="slotProps.class"
-                >
-                    Add Customer
-                </RouterLink>
-            </Button>
         </div>
 
         <div class="bg-white rounded-2xl border border-surface-200 p-2">
             <div class="flex flex-col md:flex-row justify-between items-center px-4 py-4 gap-4">
                 <IconField iconPosition="left" class="w-full md:w-80">
                     <InputIcon class="pi pi-search text-surface-400" />
-                    <InputText v-model="search" placeholder="Search" @input="onSearch" />
+                    <InputText v-model="search" placeholder="Search by code" @input="onSearch" />
                 </IconField>
             </div>
             <DataTable
                 :value="items" :loading="loading" dataKey="id" class="clean-table" :rowHover="true">
-
-                <Column field="name" header="Name" class="min-w-[16rem]">
+                
+                <Column field="code" header="Code" class="min-w-[12rem]">
                     <template #body="{ data }">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center">
-                                <i class="pi pi-user text-primary-500 text-lg"></i>
-                            </div>
-
-                            <span class="font-semibold text-surface-900">
-                                {{ data.name }}
-                            </span>
-                        </div>
+                        <span class="font-bold text-primary-600">
+                            {{ data.code }}
+                        </span>
                     </template>
                 </Column>
 
-                <Column field="phone" header="Phone"></Column>
+                <Column field="created_at" header="Date">
+                    <template #body="{ data }">
+                        {{ formatDate(data.created_at) }}
+                    </template>
+                </Column>
+
+                <Column header="Customer">
+                    <template #body="{ data }">
+                        {{ data.customer?.name ?? 'Guest' }}
+                    </template>
+                </Column>
+
+                <Column field="subtotal" header="Subtotal">
+                    <template #body="{ data }">
+                        {{ formatCurrency(data.subtotal) }}
+                    </template>
+                </Column>
+
+                <Column field="tax" header="Tax">
+                    <template #body="{ data }">
+                        {{ formatCurrency(data.tax) }}
+                    </template>
+                </Column>
+
+                <Column field="total" header="Total">
+                    <template #body="{ data }">
+                        <span class="font-bold text-surface-900">
+                            {{ formatCurrency(data.total) }}
+                        </span>
+                    </template>
+                </Column>
 
                 <Column header="Actions" style="width: 5rem;">
                     <template #body="{ data }">
                         <div class="flex items-center gap-2">
-                            <RouterLink :to="{ name: 'customers-edit', params: { id: data.id } }">
-                                <Button icon="pi pi-pencil" text rounded severity="primary" class="w-9! h-9! border-surface-200! text-surface-200! hover:text-primary-600! hover:border-primary-500 hover:bg-primary-50! bg-white" />
+                            <RouterLink :to="{ name: 'transactions-detail', params: { id: data.id } }">
+                                <Button icon="pi pi-eye" text rounded severity="primary" class="w-9! h-9! border-surface-200! text-surface-200! hover:text-primary-600! hover:border-primary-500 hover:bg-primary-50! bg-white" />
                             </RouterLink>
-                            <Button icon="pi pi-trash" text rounded severity="danger" class="w-9! h-9! border-surface-200! text-surface-200! hover:text-primary-600! hover:border-primary-500 hover:bg-primary-50! bg-white" @click="confirmDelete(data.id)" />
                         </div>
                     </template>
                 </Column>
@@ -130,6 +137,4 @@ onMounted(() => {
             </div>
         </div>
     </div>
-
-    <ConfirmDialog />
 </template>
